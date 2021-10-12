@@ -10,7 +10,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$USER_HOME$/Documents/UNI/CS409/javaparser-core-3.23.1.jar!/" />
+          <root url="jar://$USER_HOME$/Downloads/javaparser-core-3.23.1.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
