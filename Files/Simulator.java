@@ -7,7 +7,7 @@ import java.awt.Color;
 /**
  * A simple predator-prey simulator, based on a rectangular field
  * containing rabbits and foxes.
- * 
+ *
  * @author David J. Barnes and Michael Kölling
  * @version 2016.03.18
  */
@@ -21,7 +21,7 @@ public class Simulator
     // The probability that a fox will be created in any given grid position.
     private static final double FOX_CREATION_PROBABILITY = 0.02;
     // The probability that a rabbit will be created in any given grid position.
-    private static final double RABBIT_CREATION_PROBABILITY = 0.08;    
+    private static final double RABBIT_CREATION_PROBABILITY = 0.08;
 
     // List of animals in the field.
     private List<Animal> animals;
@@ -31,7 +31,7 @@ public class Simulator
     private int step;
     // A graphical view of the simulation.
     private List<SimulatorView> views;
-    
+
     /**
      * Construct a simulation field with default size.
      */
@@ -39,7 +39,7 @@ public class Simulator
     {
         this(DEFAULT_DEPTH, DEFAULT_WIDTH);
     }
-    
+
     /**
      * Create a simulation field with the given size.
      * @param depth Depth of the field. Must be greater than zero.
@@ -53,17 +53,17 @@ public class Simulator
             depth = DEFAULT_DEPTH;
             width = DEFAULT_WIDTH;
         }
-        
+
         animals = new ArrayList<>();
         field = new Field(depth, width);
 
         views = new ArrayList<>();
-        
+
         SimulatorView view = new GridView(depth, width);
         view.setColor(Rabbit.class, Color.ORANGE);
         view.setColor(Fox.class, Color.BLUE);
         views.add(view);
-        
+
         view = new GraphView(500, 150, 500);
         view.setColor(Rabbit.class, Color.BLACK);
         view.setColor(Fox.class, Color.RED);
@@ -72,7 +72,7 @@ public class Simulator
         // Setup a valid starting point.
         reset();
     }
-    
+
     /**
      * Run the simulation from its current state for a reasonably long period,
      * (4000 steps).
@@ -81,7 +81,7 @@ public class Simulator
     {
         simulate(4000);
     }
-    
+
     /**
      * Run the simulation from its current state for the given number of steps.
      * Stop before the given number of steps if it ceases to be viable.
@@ -94,7 +94,7 @@ public class Simulator
             // delay(60);   // uncomment this to run more slowly
         }
     }
-    
+
     /**
      * Run the simulation from its current state for a single step.
      * Iterate over the whole field updating the state of each
@@ -105,7 +105,7 @@ public class Simulator
         step++;
 
         // Provide space for newborn animals.
-        List<Animal> newAnimals = new ArrayList<>();        
+        List<Animal> newAnimals = new ArrayList<>();
         // Let all rabbits act.
         for(Iterator<Animal> it = animals.iterator(); it.hasNext(); ) {
             Animal animal = it.next();
@@ -114,13 +114,13 @@ public class Simulator
                 it.remove();
             }
         }
-               
+
         // Add the newly born foxes and rabbits to the main lists.
         animals.addAll(newAnimals);
 
         updateViews();
     }
-        
+
     /**
      * Reset the simulation to a starting position.
      */
@@ -135,7 +135,7 @@ public class Simulator
         populate();
         updateViews();
     }
-    
+
     /**
      * Update all existing views.
      */
@@ -145,7 +145,7 @@ public class Simulator
             view.showStatus(step, field);
         }
     }
-    
+
     /**
      * Randomly populate the field with foxes and rabbits.
      */
@@ -169,7 +169,7 @@ public class Simulator
             }
         }
     }
-    
+
     /**
      * Pause for a given time.
      * @param millisec  The time to pause for, in milliseconds
