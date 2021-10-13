@@ -1,9 +1,9 @@
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.MethodDeclaration;
-import com.github.javaparser.ast.body.VariableDeclarator;
+import com.github.javaparser.ast.expr.ConditionalExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
-import com.github.javaparser.ast.expr.VariableDeclarationExpr;
+import com.github.javaparser.ast.stmt.*;
 import com.github.javaparser.ast.visitor.VoidVisitor;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 
@@ -14,7 +14,7 @@ import java.util.List;
 
 public class MethodVisitor {
 
-    private static final String FILE_PATH = "./Files/Simulator.java";
+    private static final String FILE_PATH = "./Files/Animal.java";
 
     public static void main(String[] args) throws Exception {
         File dir = new File("./Files");
@@ -22,39 +22,34 @@ public class MethodVisitor {
         for (File file : listFiles) {
             CompilationUnit cu = StaticJavaParser.parse(new FileInputStream(file.getPath()));
 
-            //VoidVisitor<Void> methodNameVisitor = new MethodNamePrinter();
-            //methodNameVisitor.visit(cu, null);
-           // List<String> methodNames = new ArrayList<>();
-           // VoidVisitor<List<String>> methodNameCollector = new MethodNameCollector();
-           // methodNameCollector.visit(cu, methodNames);
+
+
+            //WMC 1 - SIMPLE
+
+            List<String> methodNames = new ArrayList<>();
+            VoidVisitor<List<String>> methodNameCollector = new MethodNameCollector();
+            methodNameCollector.visit(cu, methodNames);
             //methodNames.forEach(n -> System.out.println("Method Name Collected: " + n));
             //System.out.println("No. of methods in " + file.getPath() + ": " + methodNames.size());
 
-            //List<String> methodCalls = new ArrayList<>();
-            //VoidVisitor<List<String>> methodCallCollector = new MethodCallCollector();
-            //methodCallCollector.visit(cu, methodCalls);
+            //WMC 2 - WEIGHTED
+
+            List<String> methodDecisions = new ArrayList<>();
+            VoidVisitor<List<String>> wmc2Metric = new WMC2();
+            wmc2Metric.visit(cu, methodDecisions);
+            System.out.println("Score of " + file.getPath() + ": " + methodDecisions.size());
+
+
+            //RFC
+            List<String> methodCalls = new ArrayList<>();
+            VoidVisitor<List<String>> methodCallCollector = new MethodCallCollector();
+            methodCallCollector.visit(cu, methodCalls);
             //methodCalls.forEach(n -> System.out.println("Method Call Collected: " + n));
-            //System.out.println("No. of method calls in " + file.getPath() + ": " + methodCalls.size());
-
-            List<String> coupledClasses = new ArrayList<>();
-            VoidVisitor<List<String>> classRefCollector = new ClassRefCollector();
-            classRefCollector.visit(cu, coupledClasses);
-
-            coupledClasses.forEach(n -> System.out.println("Coupling detected with class: " + n));
-
-
+           // System.out.println("No. of method calls in " + file.getPath() + ": " + methodCalls.size());
         }
     }
 
-    private static class MethodNamePrinter extends VoidVisitorAdapter<Void> {
-
-        @Override
-        public void visit(MethodDeclaration md, Void arg) {
-            super.visit(md, arg);
-            System.out.println("Method Name Printed: " + md.getName());
-        }
-    }
-
+    //WMC 1 - SIMPLE
     private static class MethodNameCollector extends VoidVisitorAdapter<List<String>> {
 
         @Override
@@ -64,6 +59,55 @@ public class MethodVisitor {
         }
     }
 
+    //WMC 2 - WEIGHTED
+
+    private static class WMC2 extends VoidVisitorAdapter<List<String>>{
+
+        public void visit(MethodDeclaration md, List<String> collector){
+            super.visit(md, collector );
+            collector.add(md.getNameAsString());
+        }
+
+        public void visit(ConditionalExpr cExpr, List<String> collector){
+            super.visit(cExpr, collector);
+            collector.add(cExpr.toString());
+        }
+
+        public void visit(ForStmt stmt, List<String> collector){
+            super.visit(stmt, collector);
+            collector.add(stmt.toString());
+        }
+
+        public void visit(DoStmt stmt, List<String> collector){
+            super.visit(stmt, collector);
+            collector.add(stmt.toString());
+        }
+
+        public void visit(ForEachStmt stmt, List<String> collector){
+            super.visit(stmt, collector);
+            collector.add(stmt.toString());
+        }
+
+        public void visit(IfStmt stmt, List<String> collector){
+            super.visit(stmt, collector);
+            collector.add(stmt.toString());
+        }
+
+        public void visit(SwitchStmt stmt, List<String> collector){
+            super.visit(stmt, collector);
+            collector.add(stmt.toString());
+        }
+
+        public void visit(WhileStmt stmt, List<String> collector){
+            super.visit(stmt, collector);
+            collector.add(stmt.toString());
+        }
+
+
+
+    }
+
+    //RFC
     private static class MethodCallCollector extends VoidVisitorAdapter<List<String>> {
 
         @Override
@@ -71,24 +115,6 @@ public class MethodVisitor {
             super.visit(mce, collector);
             collector.add(mce.getNameAsString());
         }
-    }
-
-    private static class ClassRefCollector extends VoidVisitorAdapter<List<String>> {
-
-        //used to check method declarations
-
-
-        //used to check for variables
-        public void visit(VariableDeclarationExpr n, List<String> collector){
-            for (VariableDeclarator var : n.getVariables()){
-
-                if(!collector.contains(var.getTypeAsString())){
-                    collector.add(var.getTypeAsString());
-                }
-            }
-            super.visit(n, collector);
-        }
-
     }
 
 }
