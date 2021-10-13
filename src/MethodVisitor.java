@@ -2,6 +2,7 @@ import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.ConditionalExpr;
+import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.stmt.*;
 import com.github.javaparser.ast.visitor.VoidVisitor;
@@ -44,8 +45,8 @@ public class MethodVisitor {
             List<String> methodCalls = new ArrayList<>();
             VoidVisitor<List<String>> methodCallCollector = new MethodCallCollector();
             methodCallCollector.visit(cu, methodCalls);
-            //methodCalls.forEach(n -> System.out.println("Method Call Collected: " + n));
-           // System.out.println("No. of method calls in " + file.getPath() + ": " + methodCalls.size());
+           // methodCalls.forEach(n -> System.out.println("Method Call Collected: " + n));
+            //System.out.println("No. of method calls in " + file.getPath() + ": " + methodCalls.size());
         }
     }
 
@@ -63,41 +64,50 @@ public class MethodVisitor {
 
     private static class WMC2 extends VoidVisitorAdapter<List<String>>{
 
+        //gets method declaration
         public void visit(MethodDeclaration md, List<String> collector){
             super.visit(md, collector );
             collector.add(md.getNameAsString());
         }
 
+        //honestly unsure what this does, dont think it does anything
         public void visit(ConditionalExpr cExpr, List<String> collector){
             super.visit(cExpr, collector);
             collector.add(cExpr.toString());
         }
 
+        //checks for loops and adds to list
         public void visit(ForStmt stmt, List<String> collector){
             super.visit(stmt, collector);
             collector.add(stmt.toString());
         }
 
+        //checks for do loops and adds to list
         public void visit(DoStmt stmt, List<String> collector){
             super.visit(stmt, collector);
             collector.add(stmt.toString());
         }
 
+        //checks for each
         public void visit(ForEachStmt stmt, List<String> collector){
             super.visit(stmt, collector);
             collector.add(stmt.toString());
         }
 
+        //checks for ifs
         public void visit(IfStmt stmt, List<String> collector){
             super.visit(stmt, collector);
             collector.add(stmt.toString());
+
         }
 
+        //checks for switches
         public void visit(SwitchStmt stmt, List<String> collector){
             super.visit(stmt, collector);
             collector.add(stmt.toString());
         }
 
+        //checks for while
         public void visit(WhileStmt stmt, List<String> collector){
             super.visit(stmt, collector);
             collector.add(stmt.toString());
