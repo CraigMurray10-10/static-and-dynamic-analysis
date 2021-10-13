@@ -21,7 +21,7 @@ public class MethodVisitor {
         File dir = new File("./Files");
         File[] listFiles = dir.listFiles();
 
-        // File file = new File("./Files/Simulator.java");
+        // File file = new File("./Files/Field.java");
         for (File file : listFiles) {
             CompilationUnit cu = StaticJavaParser.parse(new FileInputStream(file.getPath()));
 
@@ -48,9 +48,9 @@ public class MethodVisitor {
             methodCallCollector.visit(cu, methodCalls);
             // methodCalls.forEach(n -> System.out.println("Method Call Collected: " + n));
             //System.out.println("No. of method calls in " + file.getPath() + ": " + methodCalls.size());
-        }
+     //   }
     }
-    //}
+    }
 
     //WMC 1 - SIMPLE
     private static class MethodNameCollector extends VoidVisitorAdapter<List<String>> {
@@ -86,6 +86,9 @@ public class MethodVisitor {
         //checks for loops and adds to list
         public void visit(ForStmt stmt, List<String> collector){
             super.visit(stmt, collector);
+
+            Expression expr = stmt.asForStmt().getCompare().get();
+            collector = this.checkExpression(expr, collector);
             collector.add(stmt.toString());
         }
 
@@ -93,8 +96,6 @@ public class MethodVisitor {
         public void visit(DoStmt stmt, List<String> collector){
             super.visit(stmt, collector);
             collector.add(stmt.toString());
-
-            Expression expr = stmt.getCondition();
 
             collector = this.checkExpression(stmt.getCondition(), collector);
 
@@ -104,8 +105,6 @@ public class MethodVisitor {
         public void visit(ForEachStmt stmt, List<String> collector){
             super.visit(stmt, collector);
             collector.add(stmt.toString());
-
-
         }
 
         //checks for ifs
@@ -136,11 +135,12 @@ public class MethodVisitor {
             super.visit(stmt, collector);
             collector.add(stmt.toString());
 
-            Expression expr = stmt.getCondition();
             collector = this.checkExpression(stmt.getCondition(), collector);
         }
 
         public List<String> checkExpression(Expression expr, List<String> collector){
+
+
             if(expr.isBinaryExpr()){
 
                 if(expr.asBinaryExpr().getOperator().asString() == "||" || expr.asBinaryExpr().getOperator().asString() == "&&"){
@@ -153,6 +153,9 @@ public class MethodVisitor {
 
                 if(expr.asBinaryExpr().getRight().isBinaryExpr()){
                     collector = checkExpression(expr.asBinaryExpr().getLeft(), collector);
+                } else if (expr.asBinaryExpr().getRight().isEnclosedExpr()){
+                    expr = expr.asBinaryExpr().getRight().asEnclosedExpr().getInner();
+                    collector = checkExpression(expr, collector);
                 }
 
             }
