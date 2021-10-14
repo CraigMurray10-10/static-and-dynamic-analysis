@@ -31,9 +31,9 @@ public class MethodVisitor {
         System.out.format("%s %32s %16s %16s %16s %16s\n", "Class", "WMC", "WMC(Complex)", "RFC", "CBO", "LCOM");
 
         // File file = new File("./Files/Field.java");
-       // for (File file : listFiles) {
+         for (File file : listFiles) {
 
-            File file = new File("./Files/MerchantBank.java");
+           // File file = new File("./Files/MerchantBank.java");
             CompilationUnit cu = StaticJavaParser.parse(new FileInputStream(file.getPath()));
 
 
@@ -76,7 +76,7 @@ public class MethodVisitor {
 
             System.out.format("%16s \n", "-" );
         }
-    //}
+    }
 
     //WMC 1 - SIMPLE
     private static class MethodNameCollector extends VoidVisitorAdapter<List<String>> {
@@ -252,9 +252,6 @@ public class MethodVisitor {
         @Override
         public void visit(VariableDeclarationExpr dExpr, List<String> collector){
             super.visit(dExpr, collector);
-
-            List<VariableDeclarator> x= dExpr.getVariables();
-
 
             for(VariableDeclarator v : dExpr.getVariables()){
                 if(!collector.contains(v.getTypeAsString()) && !v.getType().isPrimitiveType() && v.getType().isClassOrInterfaceType()){
