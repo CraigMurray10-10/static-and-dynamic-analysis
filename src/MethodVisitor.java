@@ -1,10 +1,16 @@
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.ConditionalExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.expr.VariableDeclarationExpr;
 import com.github.javaparser.ast.stmt.*;
+import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.visitor.VoidVisitor;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 
@@ -25,7 +31,9 @@ public class MethodVisitor {
         System.out.format("%s %32s %16s %16s %16s %16s\n", "Class", "WMC", "WMC(Complex)", "RFC", "CBO", "LCOM");
 
         // File file = new File("./Files/Field.java");
-        for (File file : listFiles) {
+       // for (File file : listFiles) {
+
+            File file = new File("./Files/MerchantBank.java");
             CompilationUnit cu = StaticJavaParser.parse(new FileInputStream(file.getPath()));
 
 
@@ -64,11 +72,11 @@ public class MethodVisitor {
             List<String> coupledClasses = new ArrayList<>();
             VoidVisitor<List<String>> cBOCalculator = new CBOCalculator();
             cBOCalculator.visit(cu, coupledClasses);
-            System.out.format("%16s", "-" );
+            System.out.format("%16s", coupledClasses.size() );
 
             System.out.format("%16s \n", "-" );
         }
-    }
+    //}
 
     //WMC 1 - SIMPLE
     private static class MethodNameCollector extends VoidVisitorAdapter<List<String>> {
@@ -215,21 +223,56 @@ public class MethodVisitor {
 
     private static class CBOCalculator extends VoidVisitorAdapter<List<String>> {
 
+        // checks if variables declared in fields are type of other objects
         @Override
-        public void visit(MethodCallExpr mce, List<String> collector) {
-            super.visit(mce, collector);
+        public void visit(FieldDeclaration dExpr, List<String> collector){
+            super.visit(dExpr, collector);
 
+            for(VariableDeclarator v : dExpr.getVariables()){
 
-            if(mce.getScope().isPresent()){
-               // System.out.println(mce.toString());
-                Expression expr = mce.getScope().get();
+                    Type x = v.getType().getElementType();
 
-                if(expr.isNameExpr()){
-                    expr.asNameExpr().getClass();
-                }
+                    if(x.isClassOrInterfaceType() && x.asClassOrInterfaceType().getTypeArguments().isPresent()){
+                       for(Type t : x.asClassOrInterfaceType().getTypeArguments().get()){
+                           if(!collector.contains(t) && !t.isPrimitiveType()){
+                               collector.add(t.asString());
+                           }
+                       }
+
+                    } else {
+                        if(!collector.contains(x) && !x.isPrimitiveType()){
+                            collector.add(x.asString());
+                        }
+                    }
 
             }
+
         }
+
+        @Override
+        public void visit(VariableDeclarationExpr dExpr, List<String> collector){
+            super.visit(dExpr, collector);
+
+            List<VariableDeclarator> x= dExpr.getVariables();
+
+
+            for(VariableDeclarator v : dExpr.getVariables()){
+                if(!collector.contains(v.getTypeAsString()) && !v.getType().isPrimitiveType() && v.getType().isClassOrInterfaceType()){
+                    collector.add(v.getTypeAsString());
+                }
+            }
+
+
+        }
+
+
+
+
+
+
+
+
+
 
 
 
