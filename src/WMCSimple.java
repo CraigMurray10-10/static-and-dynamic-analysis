@@ -26,6 +26,8 @@ public class WMCSimple {
 
         for(File file : listFiles){
             System.out.println(file.getPath());
+
+            System.out.println(file.getPath());
             CompilationUnit cu = StaticJavaParser.parse(new FileInputStream(file.getPath()));
 
             VoidVisitor<HashMap<String, List<String>>> classVisitor = new ClassVisitor();

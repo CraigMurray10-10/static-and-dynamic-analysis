@@ -21,7 +21,7 @@ public class MethodVisitor {
     private static final String FILE_PATH = "./Files/Animal.java";
 
     public static void main(String[] args) throws Exception {
-        File dir = new File("./Files/TaxiFiles");
+        File dir = new File("./Files/WeblogFiles");
 
             //WMC 1 - SIMPLE
 
