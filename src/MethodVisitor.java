@@ -1,66 +1,62 @@
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.body.MethodDeclaration;
-import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.body.*;
+import com.github.javaparser.ast.expr.*;
+import com.github.javaparser.ast.stmt.*;
+import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.visitor.VoidVisitor;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
+import com.github.javaparser.resolution.declarations.ResolvedMethodDeclaration;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 
 public class MethodVisitor {
 
     private static final String FILE_PATH = "./Files/Animal.java";
 
     public static void main(String[] args) throws Exception {
-        File dir = new File("./Files");
-        File[] listFiles = dir.listFiles();
-        for (File file : listFiles) {
-            CompilationUnit cu = StaticJavaParser.parse(new FileInputStream(file.getPath()));
+        File dir = new File("./Files/WeblogFiles");
 
-            //VoidVisitor<Void> methodNameVisitor = new MethodNamePrinter();
-            //methodNameVisitor.visit(cu, null);
-            List<String> methodNames = new ArrayList<>();
-            VoidVisitor<List<String>> methodNameCollector = new MethodNameCollector();
-            methodNameCollector.visit(cu, methodNames);
-            methodNames.forEach(n -> System.out.println("Method Name Collected: " + n));
-            System.out.println("No. of methods in " + file.getPath() + ": " + methodNames.size());
+            //WMC 1 - SIMPLE
 
-            List<String> methodCalls = new ArrayList<>();
-            VoidVisitor<List<String>> methodCallCollector = new MethodCallCollector();
-            methodCallCollector.visit(cu, methodCalls);
-            methodCalls.forEach(n -> System.out.println("Method Call Collected: " + n));
-            System.out.println("No. of method calls in " + file.getPath() + ": " + methodCalls.size());
-        }
-    }
+            WMCSimple wmcCalculator = new WMCSimple(dir);
+            HashMap<String, Integer> wmcResults = wmcCalculator.getResults();
 
-    private static class MethodNamePrinter extends VoidVisitorAdapter<Void> {
+            //WMC 2 - WEIGHTED
+            WMCComplex wmcCalculator2 = new WMCComplex(dir);
+            HashMap<String, Integer> wmcComplexResults = wmcCalculator2.getResults();
 
-        @Override
-        public void visit(MethodDeclaration md, Void arg) {
-            super.visit(md, arg);
-            System.out.println("Method Name Printed: " + md.getName());
-        }
-    }
+            //RFC
+            RFCCalculator rfcCalc = new RFCCalculator(dir);
+            HashMap<String,Integer> rfcResults = rfcCalc.getResults();
 
-    private static class MethodNameCollector extends VoidVisitorAdapter<List<String>> {
+            //CBO
+             CBOCalculator cboCalc = new CBOCalculator(dir);
+             HashMap<String,Integer> cboResults = cboCalc.getResults();
 
-        @Override
-        public void visit(MethodDeclaration md, List<String> collector) {
-            super.visit(md, collector);
-            collector.add(md.getNameAsString());
-        }
-    }
 
-    private static class MethodCallCollector extends VoidVisitorAdapter<List<String>> {
 
-        @Override
-        public void visit(MethodCallExpr mce, List<String> collector) {
-            super.visit(mce, collector);
-            collector.add(mce.getNameAsString());
-        }
+            System.out.format("%10s %20s %25s %20s %20s %20s\n", "CLASS", "WMC", "WMC Complex", "RFC", "LCOM", "CBO");
+
+            for(String s : cboResults.keySet()){
+
+                System.out.format("%10s %20d %25d %20d %20s %20d\n",
+                        (s),
+                        wmcResults.get(s),
+                        wmcComplexResults.get(s),
+                        rfcResults.get(s),
+                        "-",
+                        cboResults.get(s));
+
+            }
+
+
     }
 
 }
