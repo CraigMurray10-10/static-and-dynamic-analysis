@@ -1,6 +1,8 @@
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.ConditionalExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
@@ -12,6 +14,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 
 public class MethodVisitor {
 
@@ -48,8 +52,29 @@ public class MethodVisitor {
             methodCallCollector.visit(cu, methodCalls);
             // methodCalls.forEach(n -> System.out.println("Method Call Collected: " + n));
             //System.out.println("No. of method calls in " + file.getPath() + ": " + methodCalls.size());
-     //   }
-    }
+
+            //LCOM1
+            List<Optional<BlockStmt>> methodBodies = new ArrayList<>();
+            VoidVisitor<List<Optional<BlockStmt>>> bodyCollector = new MethodBodyCollector();
+            VoidVisitor<List<String>> fieldCollector = new FieldCollector();
+            bodyCollector.visit(cu, methodBodies);
+            List<String> instanceVariables = new ArrayList<>();
+            fieldCollector.visit(cu, instanceVariables);
+            System.out.println(instanceVariables);
+            for (Optional<BlockStmt> body : methodBodies) {
+                try {
+                    String bodyPlaintext = body.get().toString();
+                    System.out.println("Block: " + bodyPlaintext);
+                    //CompilationUnit cuLCOM = StaticJavaParser.parse(bodyPlaintext);
+                    //List<String> methodFields = new ArrayList<>();
+                    //fieldCollector.visit(cu, methodFields);
+                    //System.out.println(methodFields);
+                } catch(NoSuchElementException e) {
+                    System.out.println(e);
+                }
+            }
+            //   }
+        }
     }
 
     //WMC 1 - SIMPLE
@@ -140,7 +165,6 @@ public class MethodVisitor {
 
         public List<String> checkExpression(Expression expr, List<String> collector){
 
-
             if(expr.isBinaryExpr()){
 
                 if(expr.asBinaryExpr().getOperator().asString() == "||" || expr.asBinaryExpr().getOperator().asString() == "&&"){
@@ -177,4 +201,26 @@ public class MethodVisitor {
         }
     }
 
+    // LCOM1
+
+    private static class MethodBodyCollector extends VoidVisitorAdapter<List<Optional<BlockStmt>>>{
+
+        @Override
+        public void visit(MethodDeclaration md, List<Optional<BlockStmt>> collector) {
+            super.visit(md, collector);
+            collector.add(md.getBody());
+        }
+    }
+
+    private static class FieldCollector extends VoidVisitorAdapter<List<String>> {
+
+        @Override
+        public void visit(FieldDeclaration fd, List<String> collector) {
+            super.visit(fd, collector);
+            List<VariableDeclarator> instanceVariables = fd.getVariables();
+            for (VariableDeclarator vd : instanceVariables) {
+                collector.add(vd.getNameAsString());
+            }
+        }
+    }
 }
