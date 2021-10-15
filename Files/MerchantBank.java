@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 // Class to represent a bank.
-// Holds multiple accounts and has facilities to open accounts, 
+// Holds multiple accounts and has facilities to open accounts,
 // deposit and withdraw from accounts.
 
 public class MerchantBank {
