@@ -21,24 +21,23 @@ public class MethodVisitor {
     private static final String FILE_PATH = "./Files/Animal.java";
 
     public static void main(String[] args) throws Exception {
-        File dir = new File("./Files");
-        File[] listFiles = dir.listFiles();
+        File dir = new File("./Files/TaxiFiles");
 
             //WMC 1 - SIMPLE
 
-            WMCSimple wmcCalculator = new WMCSimple();
+            WMCSimple wmcCalculator = new WMCSimple(dir);
             HashMap<String, Integer> wmcResults = wmcCalculator.getResults();
 
             //WMC 2 - WEIGHTED
-            WMCComplex wmcCalculator2 = new WMCComplex();
+            WMCComplex wmcCalculator2 = new WMCComplex(dir);
             HashMap<String, Integer> wmcComplexResults = wmcCalculator2.getResults();
 
             //RFC
-            RFCCalculator rfcCalc = new RFCCalculator();
+            RFCCalculator rfcCalc = new RFCCalculator(dir);
             HashMap<String,Integer> rfcResults = rfcCalc.getResults();
 
             //CBO
-             CBOCalculator cboCalc = new CBOCalculator();
+             CBOCalculator cboCalc = new CBOCalculator(dir);
              HashMap<String,Integer> cboResults = cboCalc.getResults();
 
 
@@ -48,10 +47,10 @@ public class MethodVisitor {
             for(String s : cboResults.keySet()){
 
                 System.out.format("%10s %20d %25d %20d %20s %20d\n",
-                        (s + ".java"),
-                        wmcResults.get(s + ".java"),
-                        wmcComplexResults.get(s + ".java"),
-                        rfcResults.get(s + ".java"),
+                        (s),
+                        wmcResults.get(s),
+                        wmcComplexResults.get(s),
+                        rfcResults.get(s),
                         "-",
                         cboResults.get(s));
 

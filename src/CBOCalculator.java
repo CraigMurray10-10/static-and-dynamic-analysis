@@ -18,9 +18,8 @@ public class CBOCalculator {
     //class names & dependencies
     HashMap<String, List<String>> filesCBOMetric = new HashMap<String, List<String>>();
 
-    public CBOCalculator() throws FileNotFoundException {
+    public CBOCalculator(File dir) throws FileNotFoundException {
 
-        File dir = new File("./Files");
         File[] listFiles = dir.listFiles();
 
         //so this one iterates through all the files first, and uses a class
@@ -58,70 +57,67 @@ public class CBOCalculator {
     private static class ClassVisitor extends VoidVisitorAdapter<HashMap<String, List<String>>> {
 
 
-            public void visit(ClassOrInterfaceDeclaration cof, HashMap<String, List<String>> s){
-                super.visit(cof, s);
-                s.putIfAbsent(cof.getNameAsString(), new ArrayList<String>());
+        public void visit(ClassOrInterfaceDeclaration cof, HashMap<String, List<String>> s){
+            super.visit(cof, s);
+            s.putIfAbsent(cof.getNameAsString(), new ArrayList<String>());
+
+        }
+    }
+
+    private static class CBOVisitor extends VoidVisitorAdapter<HashMap<String, List<String>>> {
+        String classname = null;
+
+        //gets class name for this iteration of the visitor
+        //this sets class name so we know what key to .get() when adding other references.
+        public void visit(ClassOrInterfaceDeclaration cof, HashMap<String, List<String>> s) {
+            classname = cof.getNameAsString();
+            super.visit(cof, s);
+
+        }
+
+        public void visit(FieldDeclaration fd, HashMap<String, List<String>> s){
+            super.visit(fd, s);
+
+            if((!s.get(classname).contains(fd.getElementType().asString())) && (s.containsKey(fd.getElementType().asString()))){
+                s.get(classname).add(fd.getElementType().asString());
+                String f = fd.getElementType().asString();
+                s.get(fd.getElementType().asString()).add(classname);
+            }
+        }
+
+        public void visit(MethodDeclaration md, HashMap<String, List<String>> s) {
+            super.visit(md, s);
+
+            if (s.containsKey(md.getTypeAsString()) && !s.get(classname).contains(md.getTypeAsString())) {
+                s.get(classname).add(md.getTypeAsString());
+                s.get(md.getTypeAsString()).add(classname);
+
+            }
+            for (Parameter p : md.getParameters()) {
+
+                if(s.containsKey(p.getTypeAsString()) && !s.get(classname).contains(p.getTypeAsString())){
+                    s.get(classname).add(p.getTypeAsString());
+                    s.get(p.getTypeAsString()).add(classname);
+                }
 
             }
         }
 
-        private static class CBOVisitor extends VoidVisitorAdapter<HashMap<String, List<String>>> {
-            String classname = null;
 
-            //gets class name for this iteration of the visitor
-            //this sets class name so we know what key to .get() when adding other references.
-            public void visit(ClassOrInterfaceDeclaration cof, HashMap<String, List<String>> s) {
-                classname = cof.getNameAsString();
-                super.visit(cof, s);
+        public void visit(VariableDeclarationExpr vd, HashMap<String, List<String>> s){
+            super.visit(vd, s);
 
+
+            if(s.containsKey(vd.getElementType().asString()) && !s.get(classname).contains(vd.getElementType().asString())) {
+                s.get(classname).add(vd.getElementType().asString());
+                s.get(vd.getElementType().asString()).add(classname);
             }
 
-            public void visit(FieldDeclaration fd, HashMap<String, List<String>> s){
-                super.visit(fd, s);
-
-                if((!s.get(classname).contains(fd.getElementType().asString())) && (s.containsKey(fd.getElementType().asString()))){
-                    s.get(classname).add(fd.getElementType().asString());
-                    String f = fd.getElementType().asString();
-                    s.get(fd.getElementType().asString()).add(classname);
-                }
-            }
-
-            public void visit(MethodDeclaration md, HashMap<String, List<String>> s) {
-                super.visit(md, s);
-
-                if (s.containsKey(md.getTypeAsString()) && !s.get(classname).contains(md.getTypeAsString())) {
-                    s.get(classname).add(md.getTypeAsString());
-                    s.get(md.getTypeAsString()).add(classname);
-
-                }
-                    for (Parameter p : md.getParameters()) {
-
-                        if(s.containsKey(p.getTypeAsString()) && !s.get(classname).contains(p.getTypeAsString())){
-                            s.get(classname).add(p.getTypeAsString());
-                            s.get(p.getTypeAsString()).add(classname);
-                        }
-
-                    }
-                }
-
-
-            public void visit(VariableDeclarationExpr vd, HashMap<String, List<String>> s){
-                super.visit(vd, s);
-
-
-                if(s.containsKey(vd.getElementType().asString()) && !s.get(classname).contains(vd.getElementType().asString())) {
-                    s.get(classname).add(vd.getElementType().asString());
-                    s.get(vd.getElementType().asString()).add(classname);
-                }
-
-            }
-
-
-
-        }
         }
 
 
 
+    }
+}
 
 
