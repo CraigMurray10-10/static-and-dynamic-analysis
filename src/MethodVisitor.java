@@ -24,114 +24,40 @@ public class MethodVisitor {
         File dir = new File("./Files");
         File[] listFiles = dir.listFiles();
 
-
-       // System.out.format("%s %32s %16s %16s %16s %16s\n", "Class", "WMC", "WMC(Complex)", "RFC", "CBO", "LCOM");
-
-        // File file = new File("./Files/Field.java");
-        // for (File file : listFiles) {
-
-           // File file = new File("./Files/MerchantBank.java");
-          //  CompilationUnit cu = StaticJavaParser.parse(new FileInputStream(file.getPath()));
-
-
-           // System.out.print(file.getPath());
             //WMC 1 - SIMPLE
 
             WMCSimple wmcCalculator = new WMCSimple();
             HashMap<String, Integer> wmcResults = wmcCalculator.getResults();
 
-            for(String s : wmcResults.keySet()){
-                //System.out.println("File Name: " + s + " WMC Result: " + wmcResults.get(s));
-            }
-
             //WMC 2 - WEIGHTED
-             WMCComplex wmcCalculator2 = new WMCComplex();
-             HashMap<String, Integer> wmcComplexResults = wmcCalculator2.getResults();
-            for(String s : wmcComplexResults.keySet()){
-                 // System.out.println("File Name: " + s + " WMC Result: " + wmcComplexResults.get(s));
-            }
+            WMCComplex wmcCalculator2 = new WMCComplex();
+            HashMap<String, Integer> wmcComplexResults = wmcCalculator2.getResults();
 
             //RFC
-
-             RFCCalculator rfcCalc = new RFCCalculator();
+            RFCCalculator rfcCalc = new RFCCalculator();
             HashMap<String,Integer> rfcResults = rfcCalc.getResults();
-            for(String s : rfcResults.keySet()){
-                //System.out.println("File Name: " + s + " RFC Result: " + rfcResults.get(s));
-
-              }
 
             //CBO
-
-        CBOCalculator cboCalc = new CBOCalculator();
-        HashMap<String,Integer> cboResults = cboCalc.getResults();
-        for(String s : cboResults.keySet()){
-            System.out.println("File Name: " + s + " CBO Result: " + cboResults.get(s));
-
-        }
+             CBOCalculator cboCalc = new CBOCalculator();
+             HashMap<String,Integer> cboResults = cboCalc.getResults();
 
 
-        /*
-            //CBO
-            List<String> coupledClasses = new ArrayList<>();
-            VoidVisitor<List<String>> cBOCalculator = new CBOCalculator();
-            cBOCalculator.visit(cu, coupledClasses);
-           // System.out.format("%16s", coupledClasses.size() );
+
+            System.out.format("%10s %20s %25s %20s %20s %20s\n", "CLASS", "WMC", "WMC Complex", "RFC", "LCOM", "CBO");
+
+            for(String s : cboResults.keySet()){
+
+                System.out.format("%10s %20d %25d %20d %20s %20d\n",
+                        (s + ".java"),
+                        wmcResults.get(s + ".java"),
+                        wmcComplexResults.get(s + ".java"),
+                        rfcResults.get(s + ".java"),
+                        "-",
+                        cboResults.get(s));
+
+            }
 
 
-         */
-           // System.out.format("%16s \n", "-" );
-      //  }
     }
-
-
-
-    //CBO
-
-    /*
-    private static class CBOCalculator extends VoidVisitorAdapter<List<String>> {
-
-
-
-        @Override
-        public void visit(VariableDeclarationExpr dExpr, List<String> collector){
-            super.visit(dExpr, collector);
-
-            for(VariableDeclarator v : dExpr.getVariables()){
-                if(!collector.contains(v.getTypeAsString()) && !v.getType().isPrimitiveType() && v.getType().isClassOrInterfaceType()){
-                    collector.add(v.getTypeAsString());
-                }
-            }
-        }
-
-        @Override
-        public void visit(MethodDeclaration md, List<String> collector){
-            super.visit(md, collector);
-
-            if(!collector.contains(md.getTypeAsString())){
-                collector.add(md.getTypeAsString());
-            }
-
-            for(Parameter p : md.getParameters()){
-                if(!collector.contains(p.getTypeAsString())){
-                    collector.add(p.getTypeAsString());
-                }
-            }
-        }
-
-     */
-
-
-
-
-
-
-
-
-
-
-
-
-  //  }
-
 
 }
