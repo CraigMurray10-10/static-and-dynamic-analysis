@@ -64,27 +64,43 @@ public class MethodVisitor {
             fieldCollector.visit(cu, instanceVariables);
 
             System.out.println("instance variables: " + instanceVariables);
-            for (Optional<BlockStmt> body : methodBodies) {
+
+            HashMap<String,List<String>> mapElementsToMethods = new HashMap<>();
+
+            for (int i = 0; i < methodBodies.size(); i++) {
+                Optional<BlockStmt> currentBody = methodBodies.get(i);
+                String currentName = methodNames.get(i);
+                System.out.println("\n" + currentName);
+
                 try {
-                    //String bodyPlaintext = body.get().toString();
-                    BlockStmt bodyPlaintext = body.get();
+                    BlockStmt bodyPlaintext = currentBody.get(); // retrieve BlockStmt from Optional collection
                     System.out.println("Block: " + bodyPlaintext);
+
                     NodeList<Statement> statements = bodyPlaintext.getStatements(); // break BlockStmt down into javaparser statements
                     NodeList<Node> statementNodes = new NodeList<>();
                     for (Node statement : statements) { // convert statement list to node list to use node operations
                         statementNodes.add(statement);
                     }
-                    System.out.println("Statements: " + statements);
+
                     List<String> children = new ArrayList<>();
                     List<String> leafNodes = getStatementChildren(statementNodes, children); // get individual elements of all statements
                     System.out.println("LeafNodes: " + leafNodes);
+
+                    mapElementsToMethods.put(currentName, leafNodes); // correlate method name with its elements
                 } catch(NoSuchElementException e) {
                     System.out.println("Method body is empty");
+                    mapElementsToMethods.put(currentName, new ArrayList<>()); // empty list for methods with 0 elements
                 }
             }
+
+            List<List<String>> methodPairs = createMethodPairs(methodNames);
+            System.out.println(methodPairs);
+
+            calculateLCOM(methodPairs, mapElementsToMethods);
         }
     }
 
+    // method used in LCOM
     public static List<String> getStatementChildren(List<Node> nodes, List<String> leafNodes) {
         List<Node> listChildren = new ArrayList<>();
         for (Node node : nodes) {
@@ -97,6 +113,48 @@ public class MethodVisitor {
             }
         }
         return leafNodes;
+    }
+
+    // method used in LCOM
+    public static List<List<String>> createMethodPairs(List<String> methodNames) { // pair up methods without duplicate/equivalent pairs
+        List<List<String>> methodPairs = new ArrayList<>();
+        for(int i = 0 ; i < methodNames.size(); i ++){
+            for(int j = i+1 ; j < methodNames.size(); j ++){
+                List<String> pair = new ArrayList<>();
+                pair.add(methodNames.get(i));
+                pair.add(methodNames.get(j));
+                methodPairs.add(pair);
+            }
+        }
+        return methodPairs;
+    }
+
+    // method used in LCOM
+    public static void calculateLCOM(List<List<String>> methodPairs, HashMap<String,List<String>> map) {
+        HashMap<String,Integer> scores = new HashMap<>();
+        for (String key : map.keySet()) { // initialise scores
+            scores.put(key, 0);
+        }
+
+        for (List<String> pair : methodPairs) {
+            boolean sharedVariables = false;
+            String methodA = pair.get(0);
+            String methodB = pair.get(1);
+            for (String instanceVariable : map.get(methodA)) {
+                if (map.get(methodB).contains(instanceVariable) ) { // if method B's instance variable list contains the current instance variable of method A
+                    sharedVariables = true;
+                }
+            }
+            if (sharedVariables == true) { // if methods are shared, they are cohesive, so Lack of Cohesion score deceases
+                scores.replace(methodA, scores.get(methodA), scores.get(methodA) - 1);
+                scores.replace(methodB, scores.get(methodB), scores.get(methodB) - 1);
+            }
+            else {
+                scores.replace(methodA, scores.get(methodA), scores.get(methodA) + 1);
+                scores.replace(methodB, scores.get(methodB), scores.get(methodB) + 1);
+            }
+        }
+        System.out.println(scores);
     }
 
     //WMC 1 - SIMPLE
@@ -231,9 +289,7 @@ public class MethodVisitor {
         public void visit(MethodDeclaration md, List<Optional<BlockStmt>> collector) {
             super.visit(md, collector);
             Optional<BlockStmt> body = md.getBody();
-            if (!body.isEmpty()) {
-                collector.add(body);
-            }
+            collector.add(body);
         }
     }
 
