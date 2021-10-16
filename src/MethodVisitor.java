@@ -154,6 +154,10 @@ public class MethodVisitor {
                 scores.replace(methodB, scores.get(methodB), scores.get(methodB) + 1);
             }
         }
+        for (String key : scores.keySet()) { // set scores to minimum 0
+            if (scores.get(key) < 0)
+                scores.replace(key, 0);
+        }
         System.out.println(scores);
     }
 
