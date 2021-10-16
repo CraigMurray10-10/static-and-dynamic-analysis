@@ -21,7 +21,7 @@ import java.util.*;
 public class MethodVisitor {
 
     public static void main(String[] args) throws Exception {
-        File dir = new File("./Files/BankFiles");
+        File dir = new File("./Files/WeblogFiles");
         File[] listFiles = dir.listFiles();
 
         // File file = new File("./Files/Field.java");
@@ -127,12 +127,7 @@ public class MethodVisitor {
         return methodPairs;
     }
 
-    // method used in LCOM
     public static int calculateLCOM(List<List<String>> methodPairs, HashMap<String,List<String>> map) {
-        //HashMap<String,Integer> scores = new HashMap<>();
-        //for (String key : map.keySet()) { // initialise scores
-        //    scores.put(key, 0);
-        //}
         int score = 0;
 
         for (List<String> pair : methodPairs) {
@@ -145,13 +140,9 @@ public class MethodVisitor {
                 }
             }
             if (sharedVariables == true) { // if methods are shared, they are cohesive, so Lack of Cohesion score deceases
-                //scores.replace(methodA, scores.get(methodA), scores.get(methodA) - 1);
-                //scores.replace(methodB, scores.get(methodB), scores.get(methodB) - 1);
                 score--;
             }
             else {
-                //scores.replace(methodA, scores.get(methodA), scores.get(methodA) + 1);
-                //scores.replace(methodB, scores.get(methodB), scores.get(methodB) + 1);
                 score++;
             }
         }
