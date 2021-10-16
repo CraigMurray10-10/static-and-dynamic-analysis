@@ -1,6 +1,7 @@
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
@@ -15,10 +16,7 @@ import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.*;
 
 public class MethodVisitor {
 
@@ -57,7 +55,7 @@ public class MethodVisitor {
             //System.out.println("No. of method calls in " + file.getPath() + ": " + methodCalls.size());
 
             //LCOM1
-            VoidVisitor<List<Optional<BlockStmt>>> bodyCollector = new MethodBodyCollector();
+            VoidVisitor<List<Optional<BlockStmt>>> bodyCollector = new MethodBodyCollector(); // get list of individual methods of class
             List<Optional<BlockStmt>> methodBodies = new ArrayList<>();
             bodyCollector.visit(cu, methodBodies);
 
@@ -71,21 +69,34 @@ public class MethodVisitor {
                     //String bodyPlaintext = body.get().toString();
                     BlockStmt bodyPlaintext = body.get();
                     System.out.println("Block: " + bodyPlaintext);
-                    System.out.println("Statements: " + bodyPlaintext.getStatements());
-                    List<Node> children = bodyPlaintext.getChildNodes();
-                    for (Node child : children) {
-                        System.out.println("child node: " + child);
+                    NodeList<Statement> statements = bodyPlaintext.getStatements(); // break BlockStmt down into javaparser statements
+                    NodeList<Node> statementNodes = new NodeList<>();
+                    for (Node statement : statements) { // convert statement list to node list to use node operations
+                        statementNodes.add(statement);
                     }
-                    //String[] bodyElements = bodyPlaintext.split(" ");
-                    //for (String element: bodyElements) {
-                     //   System.out.println(element);
-                    //}
+                    System.out.println("Statements: " + statements);
+                    List<String> children = new ArrayList<>();
+                    List<String> leafNodes = getStatementChildren(statementNodes, children); // get individual elements of all statements
+                    System.out.println("LeafNodes: " + leafNodes);
                 } catch(NoSuchElementException e) {
                     System.out.println("Method body is empty");
                 }
             }
-            //   }
         }
+    }
+
+    public static List<String> getStatementChildren(List<Node> nodes, List<String> leafNodes) {
+        List<Node> listChildren = new ArrayList<>();
+        for (Node node : nodes) {
+            listChildren = node.getChildNodes();
+            if (listChildren.isEmpty()) { // if node has no children, it is a leaf node
+                leafNodes.add(node.toString());
+            }
+            else { // if node has children, call recursively to expand them
+                getStatementChildren(listChildren, leafNodes);
+            }
+        }
+        return leafNodes;
     }
 
     //WMC 1 - SIMPLE
