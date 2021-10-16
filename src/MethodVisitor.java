@@ -1,12 +1,15 @@
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.ConditionalExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.stmt.*;
+import com.github.javaparser.ast.visitor.GenericVisitorAdapter;
 import com.github.javaparser.ast.visitor.VoidVisitor;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 
@@ -54,23 +57,31 @@ public class MethodVisitor {
             //System.out.println("No. of method calls in " + file.getPath() + ": " + methodCalls.size());
 
             //LCOM1
-            List<Optional<BlockStmt>> methodBodies = new ArrayList<>();
             VoidVisitor<List<Optional<BlockStmt>>> bodyCollector = new MethodBodyCollector();
-            VoidVisitor<List<String>> fieldCollector = new FieldCollector();
+            List<Optional<BlockStmt>> methodBodies = new ArrayList<>();
             bodyCollector.visit(cu, methodBodies);
+
+            VoidVisitor<List<String>> fieldCollector = new FieldCollector();
             List<String> instanceVariables = new ArrayList<>();
             fieldCollector.visit(cu, instanceVariables);
-            System.out.println(instanceVariables);
+
+            System.out.println("instance variables: " + instanceVariables);
             for (Optional<BlockStmt> body : methodBodies) {
                 try {
-                    String bodyPlaintext = body.get().toString();
+                    //String bodyPlaintext = body.get().toString();
+                    BlockStmt bodyPlaintext = body.get();
                     System.out.println("Block: " + bodyPlaintext);
-                    //CompilationUnit cuLCOM = StaticJavaParser.parse(bodyPlaintext);
-                    //List<String> methodFields = new ArrayList<>();
-                    //fieldCollector.visit(cu, methodFields);
-                    //System.out.println(methodFields);
+                    System.out.println("Statements: " + bodyPlaintext.getStatements());
+                    List<Node> children = bodyPlaintext.getChildNodes();
+                    for (Node child : children) {
+                        System.out.println("child node: " + child);
+                    }
+                    //String[] bodyElements = bodyPlaintext.split(" ");
+                    //for (String element: bodyElements) {
+                     //   System.out.println(element);
+                    //}
                 } catch(NoSuchElementException e) {
-                    System.out.println(e);
+                    System.out.println("Method body is empty");
                 }
             }
             //   }
@@ -203,12 +214,15 @@ public class MethodVisitor {
 
     // LCOM1
 
-    private static class MethodBodyCollector extends VoidVisitorAdapter<List<Optional<BlockStmt>>>{
+    private static class MethodBodyCollector extends VoidVisitorAdapter<List<Optional<BlockStmt>>> {
 
         @Override
         public void visit(MethodDeclaration md, List<Optional<BlockStmt>> collector) {
             super.visit(md, collector);
-            collector.add(md.getBody());
+            Optional<BlockStmt> body = md.getBody();
+            if (!body.isEmpty()) {
+                collector.add(body);
+            }
         }
     }
 
@@ -221,6 +235,15 @@ public class MethodVisitor {
             for (VariableDeclarator vd : instanceVariables) {
                 collector.add(vd.getNameAsString());
             }
+        }
+    }
+
+    private static class SimpleNameCollector extends VoidVisitorAdapter<List<String>> {
+
+        @Override
+        public void visit(SimpleName sn, List<String> collector) {
+            super.visit(sn, collector);
+            collector.add(sn.getIdentifier());
         }
     }
 }
