@@ -20,10 +20,8 @@ import java.util.*;
 
 public class MethodVisitor {
 
-    private static final String FILE_PATH = "./Files/Animal.java";
-
     public static void main(String[] args) throws Exception {
-        File dir = new File("./Files");
+        File dir = new File("./Files/BankFiles");
         File[] listFiles = dir.listFiles();
 
         // File file = new File("./Files/Field.java");
@@ -44,7 +42,7 @@ public class MethodVisitor {
             List<String> methodDecisions = new ArrayList<>();
             VoidVisitor<List<String>> wmc2Metric = new WMC2();
             wmc2Metric.visit(cu, methodDecisions);
-            System.out.println("Score of " + file.getPath() + ": " + methodDecisions.size());
+            //System.out.println("Score of " + file.getPath() + ": " + methodDecisions.size());
 
 
             //RFC
@@ -63,18 +61,14 @@ public class MethodVisitor {
             List<String> instanceVariables = new ArrayList<>();
             fieldCollector.visit(cu, instanceVariables);
 
-            System.out.println("instance variables: " + instanceVariables);
-
             HashMap<String,List<String>> mapElementsToMethods = new HashMap<>();
 
             for (int i = 0; i < methodBodies.size(); i++) {
                 Optional<BlockStmt> currentBody = methodBodies.get(i);
                 String currentName = methodNames.get(i);
-                System.out.println("\n" + currentName);
 
                 try {
                     BlockStmt bodyPlaintext = currentBody.get(); // retrieve BlockStmt from Optional collection
-                    System.out.println("Block: " + bodyPlaintext);
 
                     NodeList<Statement> statements = bodyPlaintext.getStatements(); // break BlockStmt down into javaparser statements
                     NodeList<Node> statementNodes = new NodeList<>();
@@ -84,19 +78,23 @@ public class MethodVisitor {
 
                     List<String> children = new ArrayList<>();
                     List<String> leafNodes = getStatementChildren(statementNodes, children); // get individual elements of all statements
-                    System.out.println("LeafNodes: " + leafNodes);
+
+                    List<String> leafNodesCopy = new ArrayList<>(leafNodes);
+                    for (String element : leafNodesCopy) {
+                        if (!instanceVariables.contains(element)) // remove elements that are not instance variables
+                            leafNodes.remove(element);
+                    }
 
                     mapElementsToMethods.put(currentName, leafNodes); // correlate method name with its elements
                 } catch(NoSuchElementException e) {
-                    System.out.println("Method body is empty");
                     mapElementsToMethods.put(currentName, new ArrayList<>()); // empty list for methods with 0 elements
                 }
             }
 
             List<List<String>> methodPairs = createMethodPairs(methodNames);
-            System.out.println(methodPairs);
 
-            calculateLCOM(methodPairs, mapElementsToMethods);
+            int score = calculateLCOM(methodPairs, mapElementsToMethods);
+            System.out.println("LCOM of " + file.getPath() + ": " + score);
         }
     }
 
@@ -130,11 +128,12 @@ public class MethodVisitor {
     }
 
     // method used in LCOM
-    public static void calculateLCOM(List<List<String>> methodPairs, HashMap<String,List<String>> map) {
-        HashMap<String,Integer> scores = new HashMap<>();
-        for (String key : map.keySet()) { // initialise scores
-            scores.put(key, 0);
-        }
+    public static int calculateLCOM(List<List<String>> methodPairs, HashMap<String,List<String>> map) {
+        //HashMap<String,Integer> scores = new HashMap<>();
+        //for (String key : map.keySet()) { // initialise scores
+        //    scores.put(key, 0);
+        //}
+        int score = 0;
 
         for (List<String> pair : methodPairs) {
             boolean sharedVariables = false;
@@ -146,19 +145,20 @@ public class MethodVisitor {
                 }
             }
             if (sharedVariables == true) { // if methods are shared, they are cohesive, so Lack of Cohesion score deceases
-                scores.replace(methodA, scores.get(methodA), scores.get(methodA) - 1);
-                scores.replace(methodB, scores.get(methodB), scores.get(methodB) - 1);
+                //scores.replace(methodA, scores.get(methodA), scores.get(methodA) - 1);
+                //scores.replace(methodB, scores.get(methodB), scores.get(methodB) - 1);
+                score--;
             }
             else {
-                scores.replace(methodA, scores.get(methodA), scores.get(methodA) + 1);
-                scores.replace(methodB, scores.get(methodB), scores.get(methodB) + 1);
+                //scores.replace(methodA, scores.get(methodA), scores.get(methodA) + 1);
+                //scores.replace(methodB, scores.get(methodB), scores.get(methodB) + 1);
+                score++;
             }
         }
-        for (String key : scores.keySet()) { // set scores to minimum 0
-            if (scores.get(key) < 0)
-                scores.replace(key, 0);
-        }
-        System.out.println(scores);
+        if (score < 0) // score should not be less than 0
+            score = 0;
+
+        return score;
     }
 
     //WMC 1 - SIMPLE
