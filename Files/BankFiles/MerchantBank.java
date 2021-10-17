@@ -9,7 +9,11 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 // Class to represent a bank.
+<<<<<<< HEAD
 // Holds multiple accounts and has facilities to open accounts,
+=======
+// Holds multiple accounts and has facilities to open accounts, 
+>>>>>>> LCOM1
 // deposit and withdraw from accounts.
 
 public class MerchantBank {

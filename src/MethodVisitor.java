@@ -40,7 +40,9 @@ public class MethodVisitor {
              CBOCalculator cboCalc = new CBOCalculator(dir);
              HashMap<String,Integer> cboResults = cboCalc.getResults();
 
-
+            //LCOM1
+            LCOM1Calculator lcomCalculator = new LCOM1Calculator(dir);
+            HashMap<String, Integer> lcomResults = lcomCalculator.getResults();
 
             System.out.format("%10s %20s %25s %20s %20s %20s\n", "CLASS", "WMC", "WMC Complex", "RFC", "LCOM", "CBO");
 
@@ -51,12 +53,11 @@ public class MethodVisitor {
                         wmcResults.get(s),
                         wmcComplexResults.get(s),
                         rfcResults.get(s),
-                        "-",
+                        lcomResults.get(s),
                         cboResults.get(s));
 
             }
 
 
     }
-
 }
